@@ -57,6 +57,11 @@ dependencies {
     implementation(libs.androidx.scenecore)
     implementation(libs.kotlinx.coroutines.guava)
 
+    implementation(libs.androidx.adaptive)
+    implementation(libs.androidx.adaptive.layout)
+    implementation(libs.androidx.adaptive.navigation)
+
+
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.androidx.junit)
