@@ -36,6 +36,7 @@ import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,6 +64,9 @@ import androidx.xr.compose.subspace.layout.height
 import androidx.xr.compose.subspace.layout.movable
 import androidx.xr.compose.subspace.layout.resizable
 import androidx.xr.compose.subspace.layout.width
+import androidx.xr.runtime.math.Pose
+import androidx.xr.runtime.math.Quaternion
+import androidx.xr.runtime.math.Vector3
 import androidx.xr.scenecore.GltfModel
 import androidx.xr.scenecore.GltfModelEntity
 import androidx.xr.scenecore.MovableComponent
@@ -79,6 +83,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             var selectedFish by remember { mutableStateOf("") }
+            var selectedScale by remember { mutableFloatStateOf(1f) }
 
             XRAdventuresTheme {
                 val session = LocalSession.current
@@ -87,14 +92,18 @@ class MainActivity : ComponentActivity() {
                         MySpatialContent(
                             selectedFish = selectedFish,
                             onFishClicked = { updatedFish ->
-                                selectedFish = updatedFish
+                                selectedFish = updatedFish.gltfName
+                                selectedScale = updatedFish.scale
                             },
-                            onRequestHomeSpaceMode = { session?.spatialEnvironment?.requestHomeSpaceMode() })
+                            onRequestHomeSpaceMode = { session?.spatialEnvironment?.requestHomeSpaceMode() },
+                            scale = selectedScale
+                        )
                     }
                 } else {
                     My2DContent(
                         onFishClicked = { updatedFish ->
-                            selectedFish = updatedFish
+                            selectedFish = updatedFish.gltfName
+                            selectedScale = updatedFish.scale
                         },
                         onRequestFullSpaceMode = { session?.spatialEnvironment?.requestFullSpaceMode() })
                 }
@@ -107,7 +116,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MySpatialContent(
     selectedFish: String,
-    onFishClicked: (String) -> Unit,
+    scale: Float,
+    onFishClicked: (FishItem) -> Unit,
     onRequestHomeSpaceMode: () -> Unit
 ) {
     SpatialPanel(
@@ -136,13 +146,13 @@ fun MySpatialContent(
             offset = EdgeOffset.inner(offset = 200.dp),
             alignment = Alignment.CenterVertically,
         ) {
-            ObjectVolume(selectedFish = selectedFish)
+            ObjectVolume(selectedFish = selectedFish, scale = scale)
         }
     }
 }
 
 @Composable
-private fun ObjectVolume(selectedFish: String) {
+private fun ObjectVolume(selectedFish: String, scale: Float) {
     val session = requireNotNull(LocalSession.current)
     val scope = rememberCoroutineScope()
     Subspace {
@@ -150,7 +160,9 @@ private fun ObjectVolume(selectedFish: String) {
             scope.launch {
                 val model = GltfModel.create(session = session, name = selectedFish).await()
                 val modelEntity = GltfModelEntity.create(session = session, model = model)
-                val movableComponent = MovableComponent.create(session = session)
+                modelEntity.setScale(scale)
+                modelEntity.setPose(Pose(translation = Vector3(x = 1f, y = 0f, z = 0f), rotation = Quaternion.Identity))
+                val movableComponent = MovableComponent.create(session = session, scaleInZ = false)
                 modelEntity.addComponent(component = movableComponent)
                 it.addChild(child = modelEntity)
             }
@@ -160,7 +172,7 @@ private fun ObjectVolume(selectedFish: String) {
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun My2DContent(onFishClicked: (String) -> Unit, onRequestFullSpaceMode: () -> Unit) {
+fun My2DContent(onFishClicked: (FishItem) -> Unit, onRequestFullSpaceMode: () -> Unit) {
     Surface {
         Row(
             modifier = Modifier.fillMaxSize(),
@@ -179,7 +191,7 @@ fun My2DContent(onFishClicked: (String) -> Unit, onRequestFullSpaceMode: () -> U
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun MainContent(onFishClicked: (String) -> Unit) {
+fun MainContent(onFishClicked: (FishItem) -> Unit) {
     val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<FishItem>()
     val scope = rememberCoroutineScope()
     val selectedItem = scaffoldNavigator.currentDestination?.contentKey
@@ -193,6 +205,7 @@ fun MainContent(onFishClicked: (String) -> Unit) {
                 Guppies are livebearers, meaning they give birth to free-swimming young rather than laying eggs. They are hardy, adaptable, and easy to care for, making them ideal for beginner aquarists. Guppies thrive in community tanks and enjoy clean, well-oxygenated water with temperatures between 22–28°C (72–82°F).
             """.trimIndent(),
             gltfName = "guppy.glb",
+            scale = 25f,
         ),
         FishItem(
             id = 2,
@@ -203,6 +216,7 @@ fun MainContent(onFishClicked: (String) -> Unit) {
                 Koi are large freshwater fish that can grow up to 36 inches (90 cm) in length and live for decades—sometimes over 50 years in well-maintained ponds. They thrive in outdoor water gardens and are known for their friendly nature, often eating from their keeper’s hand.
             """.trimIndent(),
             gltfName = "koi_orange_fish.glb",
+            scale = 0.01f,
         ),
         FishItem(
             id = 3,
@@ -213,6 +227,7 @@ fun MainContent(onFishClicked: (String) -> Unit) {
                 Sharks inhabit oceans all over the world—from shallow coastal waters to the deep sea. While they have a fearsome reputation, most sharks are not dangerous to humans. In fact, many species are shy and elusive. They play a vital role in marine ecosystems by keeping prey populations in balance and ensuring healthy oceans.
             """.trimIndent(),
             gltfName = "shark.glb",
+            scale = 1f,
         ),
         FishItem(
             id = 4,
@@ -223,6 +238,7 @@ fun MainContent(onFishClicked: (String) -> Unit) {
                 Popular types of smoked fish include salmon, mackerel, trout, herring, and whitefish. Smoking can be done using cold smoking (which cures the fish without cooking it) or hot smoking (which cooks the fish during the process). The result is a flavorful delicacy enjoyed on its own, in salads, on bagels, or as part of gourmet dishes around the world.
             """.trimIndent(),
             gltfName = "smoked_fish.glb",
+            scale = 10f,
         ),
         FishItem(
             id = 5,
@@ -235,6 +251,7 @@ fun MainContent(onFishClicked: (String) -> Unit) {
                 Tuna are also known for their long-distance migrations and complex role in marine ecosystems. Some species, like the Atlantic bluefin, are considered overfished and are the focus of conservation efforts.
             """.trimIndent(),
             gltfName = "tuna_fish.glb",
+            scale = 0.3f,
         ),
         FishItem(
             id = 6,
@@ -247,6 +264,7 @@ fun MainContent(onFishClicked: (String) -> Unit) {
                 As keystone species, whales play a crucial role in the health of marine ecosystems—and have been central to human culture, myth, and science for centuries.
             """.trimIndent(),
             gltfName = "whale.glb",
+            scale = 3f,
         ),
     )
 
@@ -266,7 +284,7 @@ fun MainContent(onFishClicked: (String) -> Unit) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    onFishClicked(item.gltfName)
+                                    onFishClicked(item)
                                     scope.launch {
                                         scaffoldNavigator.navigateTo(
                                             ListDetailPaneScaffoldRole.Detail,
@@ -366,4 +384,5 @@ data class FishItem(
     val name: String,
     val description: String,
     val gltfName: String,
+    val scale: Float,
 )
