@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,12 +8,12 @@ plugins {
 
 android {
     namespace = "de.fabianrump.xradventures"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "de.fabianrump.xradventures"
         minSdk = 34
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -28,11 +30,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_17
+        }
     }
     buildFeatures {
         compose = true
@@ -56,11 +60,11 @@ dependencies {
     implementation(libs.runtime)
     implementation(libs.androidx.scenecore)
     implementation(libs.kotlinx.coroutines.guava)
-
     implementation(libs.androidx.adaptive)
     implementation(libs.androidx.adaptive.layout)
     implementation(libs.androidx.adaptive.navigation)
-
+    implementation(libs.androidx.compose.material.icons.extended.android)
+    implementation(libs.material3)
 
     testImplementation(libs.junit)
 
