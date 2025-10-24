@@ -1,77 +1,89 @@
 package de.fabianrump.xradventures
 
 import androidx.compose.runtime.Composable
+import androidx.xr.runtime.math.Pose
+import androidx.xr.runtime.math.Quaternion
+import androidx.xr.runtime.math.Vector3
 
 @Composable
 fun createFishItems(): List<FishItem> = listOf(
     FishItem(
-        id = 1,
-        name = "Guppy",
+        name = "Pyjama Shark",
         description = """
-                The guppy (Poecilia reticulata) is a small, colorful freshwater fish native to South America. Known for its vibrant colors, flowing tails, and peaceful temperament, the guppy is one of the most popular aquarium fish in the world. Males are usually smaller and more colorful than females, displaying a wide variety of patterns and hues, including blues, reds, yellows, and greens.
-
-                Guppies are livebearers, meaning they give birth to free-swimming young rather than laying eggs. They are hardy, adaptable, and easy to care for, making them ideal for beginner aquarists. Guppies thrive in community tanks and enjoy clean, well-oxygenated water with temperatures between 22–28°C (72–82°F).
+            The pyjama shark or striped catshark (Poroderma africanum) is a species of catshark, and part of the family Scyliorhinidae, endemic to the coastal waters of South Africa.
+            This abundant, bottom-dwelling species can be found from the intertidal zone to a depth of around 100 m (330 ft), particularly over rocky reefs and kelp beds.
+            With a series of thick, parallel, dark stripes running along its stout body, the pyjama shark has an unmistakable appearance.
+            It is additionally characterized by a short head and snout with a pair of slender barbels that do not reach the mouth, and two dorsal fins that are placed far back on the body.
+            It can grow up to a length of 1.1 m (3.6 ft) long.
             """.trimIndent(),
-        gltfName = "guppy.glb",
-        scale = 25f,
+        gltfName = "pyjama_shark.glb",
+        scale = 0.55f,
+        pose = Pose(
+            translation = Vector3(x = 0.4f, y = -1f, z = -0.4f),
+            rotation = Quaternion.fromEulerAngles(pitch = 0f, yaw = 30f, roll = 0f)
+        )
     ),
     FishItem(
-        id = 2,
-        name = "Koi",
+        name = "Great White Shark",
         description = """
-                The koi fish (Cyprinus rubrofuscus), also known as nishikigoi, is a colorful variety of ornamental carp that originated in Japan. Koi are prized for their striking patterns and vibrant colors, which include combinations of white, black, red, orange, yellow, and blue. With their graceful swimming and symbolic meaning, koi are often associated with peace, strength, and good fortune in many cultures.
-
-                Koi are large freshwater fish that can grow up to 36 inches (90 cm) in length and live for decades—sometimes over 50 years in well-maintained ponds. They thrive in outdoor water gardens and are known for their friendly nature, often eating from their keeper’s hand.
+                The great white shark (Carcharodon carcharias), also known as the white shark, white pointer, or simply great white, is a species of large mackerel shark which can be found in the coastal surface waters of all the major oceans.
+                It is the only known surviving species of its genus Carcharodon.
+                The great white shark is notable for its size, with the largest preserved female specimen measuring 5.83 m (19.1 ft) in length and around 2,000 kg (4,400 lb) in weight at maturity.
+                However, most are smaller; males measure 3.4 to 4.0 m (11 to 13 ft), and females measure 4.6 to 4.9 m (15 to 16 ft) on average.
+                According to a 2014 study, the lifespan of great white sharks is estimated to be as long as 70 years or more, well above previous estimates, making it one of the longest lived cartilaginous fishes currently known.
+                According to the same study, male great white sharks take 26 years to reach sexual maturity, while the females take 33 years to be ready to produce offspring.
+                Great white sharks can swim at speeds of 25 km/h (16 mph) for short bursts and to depths of 1,200 m (3,900 ft).
             """.trimIndent(),
-        gltfName = "koi_orange_fish.glb",
-        scale = 0.01f,
+        gltfName = "great_white_shark.glb",
+        scale = 0.8f,
+        pose = Pose(
+            translation = Vector3(x = 0.4f, y = -0.4f),
+            rotation = Quaternion.fromEulerAngles(pitch = 0f, yaw = -60f, roll = 0f)
+        )
     ),
     FishItem(
-        id = 3,
-        name = "Shark",
-        description = """
-                Sharks are a diverse group of cartilaginous fish belonging to the subclass Elasmobranchii. With over 500 known species, sharks range in size from the small dwarf lanternshark (just 8 inches long) to the massive whale shark, which can exceed 40 feet. These powerful predators have streamlined bodies, keen senses, and rows of replaceable teeth, making them highly efficient hunters.
-
-                Sharks inhabit oceans all over the world—from shallow coastal waters to the deep sea. While they have a fearsome reputation, most sharks are not dangerous to humans. In fact, many species are shy and elusive. They play a vital role in marine ecosystems by keeping prey populations in balance and ensuring healthy oceans.
-            """.trimIndent(),
-        gltfName = "shark.glb",
-        scale = 1f,
-    ),
-    FishItem(
-        id = 4,
-        name = "Smoked Fish",
-        description = """
-                Smoked fish is fish that has been cured through the process of smoking, a traditional method used to preserve and flavor food. The fish is typically first salted—either through dry curing or brining—and then exposed to smoke from smoldering wood. This not only extends shelf life but also imparts a rich, savory, and often slightly sweet aroma and taste.
-
-                Popular types of smoked fish include salmon, mackerel, trout, herring, and whitefish. Smoking can be done using cold smoking (which cures the fish without cooking it) or hot smoking (which cooks the fish during the process). The result is a flavorful delicacy enjoyed on its own, in salads, on bagels, or as part of gourmet dishes around the world.
-            """.trimIndent(),
-        gltfName = "smoked_fish.glb",
-        scale = 10f,
-    ),
-    FishItem(
-        id = 5,
         name = "Tuna",
         description = """
-                Tuna are large, fast-swimming saltwater fish belonging to the Thunnini tribe, part of the mackerel family. Known for their sleek, torpedo-shaped bodies and incredible speed (up to 75 km/h or 47 mph), tuna are powerful predators found in warm and temperate oceans worldwide.
-
-                There are several species of tuna, including bluefin, yellowfin, albacore, and skipjack, each valued for their firm, flavorful flesh. Tuna is a staple in global cuisine—especially popular in sushi, sashimi, canned goods, and grilled dishes.
-
-                Tuna are also known for their long-distance migrations and complex role in marine ecosystems. Some species, like the Atlantic bluefin, are considered overfished and are the focus of conservation efforts.
+                A tuna (pl.: tunas or tuna) is a saltwater fish that belongs to the tribe Thunnini, a subgrouping of the Scombridae (mackerel) family.
+                The Thunnini comprise 15 species across five genera, the sizes of which vary greatly, ranging from the bullet tuna (max length: 50 cm or 1.6 ft, weight: 1.8 kg or 4 lb) up to the Atlantic bluefin tuna (max length: 4.6 m or 15 ft, weight: 684 kg or 1,508 lb), which averages 2 m (6.6 ft) and is believed to live up to 50 years.
             """.trimIndent(),
-        gltfName = "tuna_fish.glb",
-        scale = 0.3f,
+        gltfName = "tuna.glb",
+        scale = 0.4f,
+        pose = Pose(
+            translation = Vector3(x = 0.6f),
+            rotation = Quaternion.fromEulerAngles(pitch = 0f, yaw = 60f, roll = 0f)
+        )
     ),
     FishItem(
-        id = 6,
-        name = "Whale",
+        name = "Mooneye",
         description = """
-                Whales are large, intelligent marine mammals belonging to the order Cetacea. They are warm-blooded, breathe air through lungs, and give birth to live young. Whales are found in oceans all around the world and are divided into two main groups: toothed whales (like orcas and sperm whales) and baleen whales (like blue whales and humpbacks), which filter small prey like krill through comb-like plates.
-
-                The blue whale is the largest animal ever known to have lived, reaching lengths of over 30 meters (98 feet). Whales are known for their complex social behaviors, long migrations, and in some species, haunting vocalizations or “songs.”
-
-                As keystone species, whales play a crucial role in the health of marine ecosystems—and have been central to human culture, myth, and science for centuries.
+            Hiodontidae, commonly called mooneyes, is a family of ray-finned fish with a single included genus Hiodon.
+            The genus comprise two extant species native to North America and three to five extinct species recorded from Paleocene to Eocene age fossils.
+            They are large-eyed, fork-tailed fish that superficially resemble shads.
+            The vernacular name comes from the metallic shine of their eyes.
             """.trimIndent(),
-        gltfName = "whale.glb",
-        scale = 3f,
+        gltfName = "mooneye.glb",
+        scale = 0.6f,
+        pose = Pose(
+            translation = Vector3(x = 0.4f),
+            rotation = Quaternion.fromEulerAngles(pitch = 0f, yaw = 45f, roll = 0f)
+        )
+    ),
+    FishItem(
+        name = "Smoked Fish",
+        description = """
+                Smoked fish is fish that has been cured through the process of smoking, a traditional method used to preserve and flavor food.
+                The fish is typically first salted—either through dry curing or brining—and then exposed to smoke from smoldering wood.
+                This not only extends shelf life but also imparts a rich, savory, and often slightly sweet aroma and taste.
+                Popular types of smoked fish include salmon, mackerel, trout, herring, and whitefish.
+                Smoking can be done using cold smoking (which cures the fish without cooking it) or hot smoking (which cooks the fish during the process).
+                The result is a flavorful delicacy enjoyed on its own, in salads, on bagels, or as part of gourmet dishes around the world.
+            """.trimIndent(),
+        gltfName = "smoked_fish.glb",
+        scale = 5f,
+        pose = Pose(
+            translation = Vector3(x = 0.4f),
+            rotation = Quaternion.fromEulerAngles(pitch = 90f, yaw = -60f, roll = 0f)
+        )
     ),
 )

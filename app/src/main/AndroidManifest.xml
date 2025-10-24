@@ -10,6 +10,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.XRAdventures">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -20,6 +21,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <!-- To start app directly in full scape mode-->
+        <!--        <property-->
+        <!--            android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"-->
+        <!--            android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_MANAGED" />-->
+
     </application>
 
 </manifest>

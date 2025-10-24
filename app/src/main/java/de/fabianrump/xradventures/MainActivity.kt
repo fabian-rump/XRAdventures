@@ -1,8 +1,4 @@
-@file:OptIn(
-    ExperimentalMaterial3XrApi::class,
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3AdaptiveApi::class
-)
+@file:OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalSubspaceVolumeApi::class)
 
 package de.fabianrump.xradventures
 
@@ -10,37 +6,42 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.layout.AnimatedPane
-import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
-import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.xr.compose.material3.EnableXrComponentOverrides
-import androidx.xr.compose.material3.ExperimentalMaterial3XrApi
+import androidx.xr.compose.platform.LocalSession
 import androidx.xr.compose.platform.LocalSpatialCapabilities
-import androidx.xr.compose.platform.LocalSpatialConfiguration
 import androidx.xr.compose.spatial.Subspace
+import androidx.xr.compose.subspace.ExperimentalSubspaceVolumeApi
 import androidx.xr.compose.subspace.MovePolicy
 import androidx.xr.compose.subspace.ResizePolicy
+import androidx.xr.compose.subspace.SpatialBox
 import androidx.xr.compose.subspace.SpatialPanel
 import androidx.xr.compose.subspace.SpatialRow
+import androidx.xr.compose.subspace.Volume
+import androidx.xr.compose.subspace.layout.SpatialAlignment
+import androidx.xr.compose.subspace.layout.SubspaceModifier
+import androidx.xr.compose.subspace.layout.height
+import androidx.xr.compose.subspace.layout.width
+import androidx.xr.runtime.Session
+import androidx.xr.scenecore.Entity
+import androidx.xr.scenecore.GltfModel
+import androidx.xr.scenecore.GltfModelEntity
+import androidx.xr.scenecore.MovableComponent
 import de.fabianrump.xradventures.ui.theme.XRAdventuresTheme
 import kotlinx.coroutines.launch
+import java.nio.file.Paths
 
 class MainActivity : ComponentActivity() {
 
@@ -54,19 +55,9 @@ class MainActivity : ComponentActivity() {
                 val fishItems = createFishItems()
 
                 if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
-                    Subspace {
-                        SpatialRow {
-                            SpatialPanel(
-                                dragPolicy = MovePolicy(),
-                                resizePolicy = ResizePolicy()
-                            ) {
-                                Content(fishItems = fishItems)
-                            }
-                            // Add 3D model here
-                        }
-                    }
+                    FullSpaceContent(fishItems = fishItems)
                 } else {
-                    Content(fishItems = fishItems)
+                    HomeSpaceContent(fishItems = fishItems)
                 }
             }
         }
@@ -74,105 +65,131 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun Content(
+private fun HomeSpaceContent(fishItems: List<FishItem>) {
+    val scope = rememberCoroutineScope()
+
+    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<FishItem>()
+    val selectedItem =
+        scaffoldNavigator.currentDestination?.contentKey ?: fishItems.first()
+
+    MainActivityContent(
+        fishItems = fishItems,
+        selectedFishItem = selectedItem,
+        scaffoldState = scaffoldNavigator.scaffoldState,
+        onFishItemClicked = { item ->
+            scope.launch {
+                scaffoldNavigator.navigateTo(
+                    pane = ListDetailPaneScaffoldRole.Detail,
+                    contentKey = item
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun FullSpaceContent(
     fishItems: List<FishItem>,
 ) {
-    Column {
-        AppBar()
-        Surface {
-            val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<FishItem>()
-            val scope = rememberCoroutineScope()
-            val selectedItem = scaffoldNavigator.currentDestination?.contentKey ?: fishItems.first()
+    val scope = rememberCoroutineScope()
 
-            // Doesn't work with the current libraries yet (for the top app bar it does)
-            //EnableXrComponentOverrides {
-            ListDetailPaneScaffold(
-                directive = PaneScaffoldDirective.Default,
-                scaffoldState = scaffoldNavigator.scaffoldState,
-                listPane = {
-                    AnimatedPane {
-                        ListPaneContent(
-                            categoryList = fishItems,
-                            selectedItem = selectedItem,
-                            onFishClicked = { item ->
-                                    scope.launch {
-                                        scaffoldNavigator.navigateTo(
-                                            pane = ListDetailPaneScaffoldRole.Detail,
-                                            contentKey = item
-                                        )
-                                    }
-                            },
-                        )
-                    }
-                },
-                detailPane = {
-                    AnimatedPane {
-                        DetailPaneContent(fishItem = selectedItem)
-                    }
-                },
+    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<FishItem>()
+    val selectedItem =
+        scaffoldNavigator.currentDestination?.contentKey ?: fishItems.first()
+
+    var volumeEntity by remember {
+        mutableStateOf<Entity?>(value = null)
+    }
+    var loadedGltfModelEntities by remember {
+        mutableStateOf<List<GltfModelEntity>>(value = listOf())
+    }
+    val session = LocalSession.current
+
+    LaunchedEffect(key1 = volumeEntity) {
+        if (session == null || volumeEntity == null) return@LaunchedEffect
+        loadedGltfModelEntities.forEach { item ->
+            item.dispose()
+        }
+        loadedGltfModelEntities = listOf()
+        fishItems.forEach { item ->
+            val loadedGltfModelEntity = loadGltfModelEntity(
+                session = session,
+                fishItem = item
             )
-            //}
+            loadedGltfModelEntities =
+                loadedGltfModelEntities + loadedGltfModelEntity
+            loadedGltfModelEntity.setEnabled(enabled = false)
+            volumeEntity?.addChild(child = loadedGltfModelEntity)
         }
     }
-}
 
-@Composable
-private fun AppBar() {
-    val configuration = LocalSpatialConfiguration.current
-    val capabilities = LocalSpatialCapabilities.current
+    LaunchedEffect(key1 = selectedItem, key2 = loadedGltfModelEntities) {
+        if (loadedGltfModelEntities.size != fishItems.size) return@LaunchedEffect
+        try {
+            loadedGltfModelEntities.forEach {
+                it.setEnabled(enabled = false)
+            }
+            loadedGltfModelEntities.get(
+                index = fishItems.indexOf(selectedItem)
+            ).setEnabled(enabled = true)
+        } catch (_: Exception) {
+            // Don't do anything
+        }
+    }
 
-    EnableXrComponentOverrides {
-        TopAppBar(
-            title = {
-                Text(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    text = stringResource(id = R.string.fish_viewer)
-                )
-            },
-            actions = {
-                IconButton(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    onClick = {
-                        if (capabilities.isSpatialUiEnabled) {
-                            configuration.requestHomeSpaceMode()
-                        } else {
-                            configuration.requestFullSpaceMode()
+    Subspace {
+        SpatialRow {
+            SpatialPanel(
+                modifier = SubspaceModifier
+                    .height(height = 600.dp)
+                    .width(width = 1000.dp),
+                dragPolicy = MovePolicy(),
+                resizePolicy = ResizePolicy()
+            ) {
+                MainActivityContent(
+                    fishItems = fishItems,
+                    selectedFishItem = selectedItem,
+                    scaffoldState = scaffoldNavigator.scaffoldState,
+                    onFishItemClicked = { item ->
+                        scope.launch {
+                            scaffoldNavigator.navigateTo(
+                                pane = ListDetailPaneScaffoldRole.Detail,
+                                contentKey = item
+                            )
                         }
                     }
-                ) {
-                    if (capabilities.isSpatialUiEnabled) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_home_space_mode_switch),
-                            contentDescription = stringResource(id = R.string.switch_to_home_space_mode)
-                        )
-                    } else {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_full_space_mode_switch),
-                            contentDescription = stringResource(id = R.string.switch_to_full_space_mode)
+                )
+            }
+            SpatialBox(
+                modifier = SubspaceModifier
+                    .height(height = 600.dp)
+                    .width(width = 600.dp),
+                alignment = SpatialAlignment.Center
+            ) {
+                Volume { entity -> volumeEntity = entity }
+                if (loadedGltfModelEntities.size != fishItems.size) {
+                    SpatialPanel {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(size = 150.dp),
+                            strokeWidth = 12.dp
                         )
                     }
                 }
             }
-        )
+        }
     }
 }
 
-//@OptIn(ExperimentalSubspaceVolumeApi::class)
-//@Composable
-//private fun ObjectVolume(selectedFish: String, scale: Float) {
-//    val session = requireNotNull(LocalSession.current)
-//    val scope = rememberCoroutineScope()
-//    Subspace {
-//        Volume {
-//            scope.launch {
-//                val model = GltfModel.create(session = session, name = selectedFish).await()
-//                val modelEntity = GltfModelEntity.create(session = session, model = model)
-//                modelEntity.setScale(scale)
-//                modelEntity.setPose(Pose(translation = Vector3(x = 1f, y = 0f, z = 0f), rotation = Quaternion.Identity))
-//                val movableComponent = MovableComponent.create(session = session, scaleInZ = false)
-//                modelEntity.addComponent(component = movableComponent)
-//                it.addChild(child = modelEntity)
-//            }
-//        }
-//    }
-//}
+private suspend fun loadGltfModelEntity(
+    session: Session,
+    fishItem: FishItem,
+): GltfModelEntity {
+    val model =
+        GltfModel.create(session = session, path = Paths.get(fishItem.gltfName))
+    val modelEntity = GltfModelEntity.create(session = session, model = model)
+    modelEntity.setScale(fishItem.scale)
+    modelEntity.setPose(fishItem.pose)
+    val movableComponent = MovableComponent.createSystemMovable(session = session, scaleInZ = false)
+    modelEntity.addComponent(component = movableComponent)
+    return modelEntity
+}

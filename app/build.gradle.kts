@@ -59,7 +59,6 @@ dependencies {
     implementation(libs.androidx.compose)
     implementation(libs.runtime)
     implementation(libs.androidx.scenecore)
-    implementation(libs.kotlinx.coroutines.guava)
     implementation(libs.androidx.adaptive)
     implementation(libs.androidx.adaptive.layout)
     implementation(libs.androidx.adaptive.navigation)
