@@ -6,14 +6,16 @@
 
 package de.fabianrump.xradventures
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -36,10 +38,12 @@ import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
 import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldState
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.xr.compose.material3.EnableXrComponentOverrides
@@ -173,21 +177,27 @@ private fun ListPaneContent(
 @Composable
 fun DetailPaneContent(fishItem: FishItem) {
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(state = rememberScrollState())
     ) {
         Spacer(modifier = Modifier.height(height = 24.dp))
-        Row {
-            Text(
-                modifier = Modifier
-                    .weight(weight = 1f)
-                    .padding(horizontal = 16.dp),
-                text = fishItem.name,
-                style = MaterialTheme.typography.headlineMedium
-            )
-            // Add small picture of fish here
-        }
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center,
+            text = fishItem.name,
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Image(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .size(size = 256.dp),
+            painter = fishItem.picture,
+            contentDescription = null,
+        )
         Spacer(modifier = Modifier.height(height = 16.dp))
         Text(
             modifier = Modifier.padding(horizontal = 16.dp),

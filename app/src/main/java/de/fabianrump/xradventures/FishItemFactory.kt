@@ -1,6 +1,7 @@
 package de.fabianrump.xradventures
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
 import androidx.xr.runtime.math.Pose
 import androidx.xr.runtime.math.Quaternion
 import androidx.xr.runtime.math.Vector3
@@ -21,7 +22,8 @@ fun createFishItems(): List<FishItem> = listOf(
         pose = Pose(
             translation = Vector3(x = 0.4f, y = -1f, z = -0.4f),
             rotation = Quaternion.fromEulerAngles(pitch = 0f, yaw = 30f, roll = 0f)
-        )
+        ),
+        picture = painterResource(id = R.drawable.pyjama_shark)
     ),
     FishItem(
         name = "Great White Shark",
@@ -39,7 +41,8 @@ fun createFishItems(): List<FishItem> = listOf(
         pose = Pose(
             translation = Vector3(x = 0.4f, y = -0.4f),
             rotation = Quaternion.fromEulerAngles(pitch = 0f, yaw = -60f, roll = 0f)
-        )
+        ),
+        picture = painterResource(id = R.drawable.great_white_shark)
     ),
     FishItem(
         name = "Tuna",
@@ -52,7 +55,8 @@ fun createFishItems(): List<FishItem> = listOf(
         pose = Pose(
             translation = Vector3(x = 0.6f),
             rotation = Quaternion.fromEulerAngles(pitch = 0f, yaw = 60f, roll = 0f)
-        )
+        ),
+        picture = painterResource(id = R.drawable.tuna)
     ),
     FishItem(
         name = "Mooneye",
@@ -67,7 +71,8 @@ fun createFishItems(): List<FishItem> = listOf(
         pose = Pose(
             translation = Vector3(x = 0.4f),
             rotation = Quaternion.fromEulerAngles(pitch = 0f, yaw = 45f, roll = 0f)
-        )
+        ),
+        picture = painterResource(id = R.drawable.mooneye)
     ),
     FishItem(
         name = "Smoked Fish",
@@ -84,6 +89,7 @@ fun createFishItems(): List<FishItem> = listOf(
         pose = Pose(
             translation = Vector3(x = 0.4f),
             rotation = Quaternion.fromEulerAngles(pitch = 90f, yaw = -60f, roll = 0f)
-        )
+        ),
+        picture = painterResource(id = R.drawable.smoked_fish)
     ),
 )

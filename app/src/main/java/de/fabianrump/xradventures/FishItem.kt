@@ -1,5 +1,6 @@
 package de.fabianrump.xradventures
 
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.xr.runtime.math.Pose
 
 data class FishItem(
@@ -8,5 +9,5 @@ data class FishItem(
     val gltfName: String,
     val scale: Float,
     val pose: Pose,
-    // val picture: String
+    val picture: Painter
 )
