@@ -6,6 +6,7 @@
 
 package de.fabianrump.xradventures
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -14,8 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -57,7 +56,7 @@ fun MainActivityContent(
     fishItems: List<FishItem>,
     selectedFishItem: FishItem,
     scaffoldState: ThreePaneScaffoldState,
-    onFishItemClicked: (FishItem) -> Unit,
+    onFishItemClicked: (index: Int) -> Unit,
 ) {
     Column {
         AppBar()
@@ -101,15 +100,12 @@ private fun AppBar() {
                 )
             },
             actions = {
+                if (configuration.hasXrSpatialFeature.not()) return@CenterAlignedTopAppBar
                 if (capabilities.isSpatialUiEnabled) {
                     IconButton(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         onClick = {
-                            if (capabilities.isSpatialUiEnabled) {
-                                configuration.requestHomeSpaceMode()
-                            } else {
-                                configuration.requestFullSpaceMode()
-                            }
+                            configuration.requestHomeSpaceMode()
                         }
                     ) {
                         Icon(
@@ -121,11 +117,7 @@ private fun AppBar() {
                     IconButton(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         onClick = {
-                            if (capabilities.isSpatialUiEnabled) {
-                                configuration.requestHomeSpaceMode()
-                            } else {
-                                configuration.requestFullSpaceMode()
-                            }
+                            configuration.requestFullSpaceMode()
                         }
                     ) {
                         Icon(
@@ -143,7 +135,7 @@ private fun AppBar() {
 private fun ListPaneContent(
     fishItems: List<FishItem>,
     selectedFishItem: FishItem?,
-    onFishItemClicked: (FishItem) -> Unit,
+    onFishItemClicked: (index: Int) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
@@ -154,7 +146,7 @@ private fun ListPaneContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        onFishItemClicked(item)
+                        onFishItemClicked(fishItems.indexOf(element = item))
                     },
                 headlineContent = {
                     Text(text = item.name)
@@ -176,6 +168,8 @@ private fun ListPaneContent(
 
 @Composable
 fun DetailPaneContent(fishItem: FishItem) {
+    val capabilities = LocalSpatialCapabilities.current
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -191,13 +185,18 @@ fun DetailPaneContent(fishItem: FishItem) {
             text = fishItem.name,
             style = MaterialTheme.typography.headlineMedium
         )
-        Image(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .size(size = 256.dp),
-            painter = fishItem.picture,
-            contentDescription = null,
-        )
+        AnimatedVisibility(visible = capabilities.isSpatialUiEnabled.not()) {
+            Column {
+                Spacer(modifier = Modifier.height(height = 16.dp))
+                Image(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(fraction = 0.5f),
+                    painter = painterResource(id = fishItem.pictureResId),
+                    contentDescription = null,
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(height = 16.dp))
         Text(
             modifier = Modifier.padding(horizontal = 16.dp),
